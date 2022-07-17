@@ -1,55 +1,32 @@
+library(ggplot2)
 library(shiny)
 
-source("helper-functions.R")
-# This app is from Saturn Cloud
+data <- read.csv("https://saturn-public-data.s3.us-east-2.amazonaws.com/examples/dashboard/housePriceData.csv")
+model <- lm(SalePrice~BedroomAbvGr+YearBuilt, data)
 
 ui <- fluidPage(
-  titlePanel("Pet Guesser"),
+  titlePanel("Housing Data"),
   sidebarLayout(
     sidebarPanel(
-      textInput("name", "Pet name"),
-      actionButton("guess_cat", "Guess Cats"),
-      actionButton("guess_dog", "Guess Dogs")
+      sliderInput("bedrooms", "Number of Bedrooms", min=0,max=8, value=3,step=1)
     ),
     mainPanel(
-      plotOutput("plot")
+      plotOutput("price_by_year")
     )
   )
 )
 
 server <- function(input, output) {
-  results <- reactive({
-    input$guess_cat
-    input$guess_dog
-    isolate({
-      selected_name <- fix_name(input$name)
-      if (nchar(selected_name) == 0) {
-        NULL
-      } else {
-        pet_type(pet_data, selected_name)
-      }
-    })
-  })
+  output$price_by_year <- renderPlot({
+    data <- data.frame(YearBuilt = 1970:2015)
+    data$BedroomAbvGr <- input$bedrooms
+    data$prediction <- predict(model, newdata = data)
 
-  guess <- reactiveVal(label = "guess")
-
-  observe({
-    input$guess_cat
-    isolate({
-      guess("cats")
-    })
-  })
-
-  observe({
-    input$guess_dog
-    isolate({
-      guess("dogs")
-    })
-  })
-
-  output$plot <- renderPlot({
-    plot_value_basic(results())
+    ggplot(data, aes(x = YearBuilt, y = prediction))+
+      geom_col(fill = "#FF6721") +
+      theme_minimal() +
+      scale_y_continuous(labels = scales::dollar) +
+      labs(x = "Year home built", y = "Predicted value of house")
   })
 }
-
-shinyApp(ui =  ui, server =  server)
+shinyApp(ui = ui, server = server)
