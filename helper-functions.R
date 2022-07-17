@@ -97,4 +97,5 @@ plot_value <- function(results) {
     plot <- plot + geom_rect(fill = "#FF6622", alpha = 0.8)
   }
   plot
+
 }

@@ -1,6 +1,7 @@
 library(shiny)
 
 source("helper-functions.R")
+# This app is from Saturn Cloud
 
 ui <- fluidPage(
   titlePanel("Pet Guesser"),
@@ -51,4 +52,4 @@ server <- function(input, output) {
   })
 }
 
-shinyApp(ui = ui, server = server)
+shinyApp(ui =  ui, server =  server)
